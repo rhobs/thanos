@@ -1,0 +1,21 @@
+name: Update Version
+
+on: [delete]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Get token to trigger update version workflow
+        id: update-version
+        uses: getsentry/action-github-app-token@v1
+        with:
+          app_id: ${{ secrets.UPDATE_VERSION_APP_ID }}
+          private_key: ${{ secrets.UPDATE_VERSION_APP_PRIVATE_KEY }}
+          scope: ${{ github.repository_owner }}
+      - name: Trigger update version workflow
+        run: |
+         curl -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ steps.update-version.outputs.token }}" \
+            --request POST \
+            https://api.github.com/repos/${{ github.repository_owner }}/syncbot/actions/workflows/update-cmo-deps-versions.yaml/dispatches -d '{"ref":"main"}'
